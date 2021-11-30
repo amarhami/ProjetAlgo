@@ -4,21 +4,22 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
+#include <stdbool.h>
 
 #define NB_MAX 50
 
 // "Nom";"Courage";"Loyauté";"Sagesse";"Malice";"Maison"
 
-typedef struct Sorcier
+typedef struct Personnage
 {
     char nom[15];
     int c;
     int l;
     int s;
     int m;
-}Point;
+}Sorcier;
 
-Point liste_sorciers[NB_MAX];
+Sorcier liste_sorciers[NB_MAX];
 
 int cpteLignes(FILE *fp){
     int nblignes =0;
@@ -33,8 +34,8 @@ int cpteLignes(FILE *fp){
 }
 
 
-int alea_centre2(int k){
-    srand(time(NULL));
+int nombres_alea(int k){
+	srand(time(NULL));
 
     int alea[k];
 
@@ -42,38 +43,34 @@ int alea_centre2(int k){
         alea[i] = rand()%NB_MAX;
         printf("%d\n", alea[i]);
     }
-    
-    while() 
-        if(alea[i] == alea[i+1] || alea[i] == alea[] )    
-}
 
-int alea_centre(int k){
-   srand(time(NULL));
-   int i =0;
-   int alea[k];
-   int s ;
-     alea[i] = rand()%(NB_MAX);
-    for ( i=1; i<k ;i++)
-    {
-          alea[i] = rand()%(NB_MAX);
-        
-         for (s=0;s=i-1;i++)
-         {if (alea[i]== alea[s])
-         {
-              alea[i] = rand()%(NB_MAX);
-              //alea_centre(k);
-         }
-    
-         }
-          printf("%d\n", alea[i]);
+    for(int i=0; i<k; i++){                 
+    	for(int j=i+1; j<k; j++){               
+    		if(alea[i] == alea[j]){
+    			printf("Deux nombres sont égaux ! On refait la regénération.\n");
+    			alea[i] = rand()%NB_MAX;
+    			printf("New alea[%d] = %d\n",i, alea[i]);
+    			i = 0;
+    			j = i+1;
+    		}
+ 
+    	}
     }
 
-  return 0;
+    return 0;
+}
 
- }
+/*int retourne_sorcier(Sorcier *tab, int k){
 
-   
+    int *T ;
+    T = nombres_alea(k);
+    for(int i=0; i<k; i++){
 
+    }
+
+    return 0;
+
+}*/
 
 int main () {
    FILE *fp;
@@ -106,13 +103,13 @@ int main () {
    }
 
     
-    printf("%s\n",liste_sorciers[5].nom);
-    printf("%d\n",liste_sorciers[5].c);
+    //printf("%s\n",liste_sorciers[5].nom);
+    //printf("%d\n",liste_sorciers[5].c);
 
 
    fclose(fp);
 
-    int alea2 = alea_centre2(5);
+    int alea2 = nombres_alea(5);
    
    return(0);
 }
