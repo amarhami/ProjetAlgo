@@ -3,6 +3,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <time.h>
+
+#define NB_MAX 50
 
 // "Nom";"Courage";"Loyauté";"Sagesse";"Malice";"Maison"
 
@@ -15,7 +18,7 @@ typedef struct Sorcier
     int m;
 }Point;
 
-Point liste_sorciers[50];
+Point liste_sorciers[NB_MAX];
 
 int cpteLignes(FILE *fp){
     int nblignes =0;
@@ -28,6 +31,49 @@ int cpteLignes(FILE *fp){
     rewind(fp);
     return (nblignes-1);
 }
+
+
+int alea_centre2(int k){
+    srand(time(NULL));
+
+    int alea[k];
+
+    for (int i=0; i<k; i++){
+        alea[i] = rand()%NB_MAX;
+        printf("%d\n", alea[i]);
+    }
+    
+    while() 
+        if(alea[i] == alea[i+1] || alea[i] == alea[] )    
+}
+
+int alea_centre(int k){
+   srand(time(NULL));
+   int i =0;
+   int alea[k];
+   int s ;
+     alea[i] = rand()%(NB_MAX);
+    for ( i=1; i<k ;i++)
+    {
+          alea[i] = rand()%(NB_MAX);
+        
+         for (s=0;s=i-1;i++)
+         {if (alea[i]== alea[s])
+         {
+              alea[i] = rand()%(NB_MAX);
+              //alea_centre(k);
+         }
+    
+         }
+          printf("%d\n", alea[i]);
+    }
+
+  return 0;
+
+ }
+
+   
+
 
 int main () {
    FILE *fp;
@@ -61,18 +107,12 @@ int main () {
 
     
     printf("%s\n",liste_sorciers[5].nom);
+    printf("%d\n",liste_sorciers[5].c);
 
-    /*
-    while(!feof(fp))
-    {
-        c = fgetc(fp);
-         if(feof(fp)){
-            break;
-        }
-        printf("%c", c);
-    }*/
 
    fclose(fp);
+
+    int alea2 = alea_centre2(5);
    
    return(0);
 }
