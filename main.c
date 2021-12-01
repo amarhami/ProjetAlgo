@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <time.h>
 #include <stdbool.h>
+#include <math.h>
 
 #define NB_MAX 50
 
@@ -34,10 +35,10 @@ int cpteLignes(FILE *fp){
 }
 
 
-int nombres_alea(int k){
+int * nombres_alea(int k){
 	srand(time(NULL));
 
-    int alea[k];
+    int *alea = malloc(k*sizeof(int));
 
     for (int i=0; i<k; i++){
         alea[i] = rand()%NB_MAX;
@@ -57,7 +58,13 @@ int nombres_alea(int k){
     	}
     }
 
-    return 0;
+    return alea;
+}
+
+
+int manhattan_distance(Sorcier s1, Sorcier s2)
+{
+return abs(s1.c - s2.c)+ abs(s1.l - s2.l)+ abs(s1.s - s2.s)+ abs(s1.m - s2.m);
 }
 
 /*int retourne_sorcier(Sorcier *tab, int k){
@@ -75,6 +82,11 @@ int nombres_alea(int k){
 int main () {
    FILE *fp;
     int i,n;
+    int k=5;
+    Sorcier bary[k];
+    
+    Sorcier s1 = { .nom ="adrien ", .c= 12, .l =13, .s=23, .m=14 };
+    Sorcier s2 = { .nom ="adriene ", .c= 16, .l =10, .s=45, .m=12};
   
    fp = fopen("choixpeauMagiqueeee.txt","r");
 
@@ -109,8 +121,26 @@ int main () {
 
    fclose(fp);
 
-    int alea2 = nombres_alea(5);
-   
+    int *alea2;
+	alea2 = nombres_alea(5);
+	
+	for (int i=0; i<5; i++)
+		{
+			printf(" Le tableau d'entiers est \n %d\n", alea2[i]);
+
+		}
+
+for (int j=0; j<5; j++)
+		{ bary[j]= liste_sorciers[alea2[j]];
+			printf(" Le barycentre num %d est %s \n" ,j, bary[j].nom);
+            
+		}
+
+
+        int res = manhattan_distance(s1,s2);
+        printf("La distance de manhattan est %d\n", res); 
+	free(alea2);
+
    return(0);
 }
 
