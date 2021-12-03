@@ -13,12 +13,13 @@
 // "Nom";"Courage";"Loyauté";"Sagesse";"Malice";"Maison"
 
 /*
-  Structure Sorcier : structure principale de notre projet, qui représente chaque sorcier avec ses 5 champs :
+  Structure Sorcier : structure principale de notre projet, qui représente chaque sorcier avec ses 6 champs :
     - Son nom;
     - Son niveau de courage;
     - Son niveau de loyauté;
     - Son niveau de sagesse;
-    - Son niveau de malice.
+    - Son niveau de malice;
+    - Le cluster auquel il va appartenir.
 */
 typedef struct Personnage
 {
@@ -30,6 +31,9 @@ typedef struct Personnage
     int cluster;
 }Sorcier;
 
+/*
+    liste_sorciers[NB_MAX] : tableau qui va regrouper tous nos sorciers.
+*/
 Sorcier liste_sorciers[NB_MAX];
 
 
@@ -48,8 +52,10 @@ int cpteLignes(FILE *fp){
     return (nblignes-1);
 }
 
-
-int * nombres_alea(int k_clust){
+/*
+    Fonction nombres_alea : va génerer aléatoirement des entiers qui serviront d'indices pour nos points représentatifs.
+*/
+int *nombres_alea(int k_clust){
 	srand(time(NULL));
 
     int *alea = malloc(k_clust*sizeof(int));
@@ -75,6 +81,10 @@ int * nombres_alea(int k_clust){
     return alea;
 }
 
+/*
+    Fonction points_representatifs : va retourner les sorciers qui serviront de points représentatifs,
+        à partir des indices générés aléatoirement dans la fonction nombres_alea. 
+*/
 Sorcier *points_representatifs(Sorcier* tab1, int *tab)
 {
 	Sorcier *bary;
@@ -89,11 +99,18 @@ Sorcier *points_representatifs(Sorcier* tab1, int *tab)
 		return bary;
 }
 
+/*
+    Fonction manhattan_distance : calcule la distance de Manhattan entre deux points (sorciers).
+*/
 int manhattan_distance(Sorcier s1, Sorcier s2){
     
     return abs(s1.c - s2.c)+ abs(s1.l - s2.l)+ abs(s1.s - s2.s)+ abs(s1.m - s2.m);
 }
 
+/*
+    Fonction affect_cluster : trouve le cluster auquel appartient un point(sorcier), à partir de la distance de Manhattan 
+            (point représentatif le plus proche de ce sorcier en terme de distance).
+*/
 int affect_cluster(Sorcier *bary, Sorcier p){
     int cluster= 0;
     int min;
@@ -111,6 +128,9 @@ int affect_cluster(Sorcier *bary, Sorcier p){
     return cluster ;
 }
 
+/*
+    Fonction clustering : affecte l'ensemble de nos points(sorciers) à leur cluster correspondant.
+*/
 
 void clustering(Sorcier *centres , Sorcier *points)
 {
@@ -124,6 +144,9 @@ void clustering(Sorcier *centres , Sorcier *points)
     }
 }
 
+/*
+    Fonction somme_partition : calcule le coût de partitionnement pour chaque cluster.
+*/
 int *somme_partition(Sorcier *centres , Sorcier *points)
 {
     int sum;
