@@ -7,10 +7,8 @@
 #include <stdbool.h>
 #include <math.h>
 
-#define NB_MAX 50
-#define k 5
-
-// "Nom";"Courage";"Loyauté";"Sagesse";"Malice";"Maison"
+#define NB_MAX 50   // Le nombre de Sorciers dont on dispose 
+#define k 5    // Nombre de clusters de notre projet
 
 /*
   Structure Sorcier : structure principale de notre projet, qui représente chaque sorcier avec ses 6 champs :
@@ -38,22 +36,8 @@ Sorcier liste_sorciers[NB_MAX];
 
 
 /*
-  Fonction cpteLignes : permet de calculer le nombre de lignes d'un fichier donné en entrée.
-*/
-int cpteLignes(FILE *fp){
-    int nblignes =0;
-    int c;
-    while((c = fgetc(fp)) != EOF)
-    {
-         if(c == '\n') nblignes++;
-    }
-
-    rewind(fp);
-    return (nblignes-1);
-}
-
-/*
     Fonction nombres_alea : va génerer aléatoirement des entiers qui serviront d'indices pour nos points représentatifs.
+    Retourne un tableau de nos k nombres aléatoires.
 */
 int *nombres_alea(int k_clust){
 	srand(time(NULL));
@@ -101,6 +85,7 @@ Sorcier *points_representatifs(Sorcier* tab1, int *tab)
 
 /*
     Fonction manhattan_distance : calcule la distance de Manhattan entre deux points (sorciers).
+    Retourne un entier.
 */
 int manhattan_distance(Sorcier s1, Sorcier s2){
     
@@ -110,6 +95,7 @@ int manhattan_distance(Sorcier s1, Sorcier s2){
 /*
     Fonction affect_cluster : trouve le cluster auquel appartient un point(sorcier), à partir de la distance de Manhattan 
             (point représentatif le plus proche de ce sorcier en terme de distance).
+    Retourne un entier.
 */
 int affect_cluster(Sorcier *bary, Sorcier p){
     int cluster= 0;
@@ -146,10 +132,12 @@ void clustering(Sorcier *centres , Sorcier *points)
 
 /*
     Fonction somme_partition : calcule le coût de partitionnement pour chaque cluster.
+    Retourne un tableau avec les sommes de chacuns de nos k clusters.
 */
 int *somme_partition(Sorcier *centres , Sorcier *points)
 {
-    int sum;
+    int sum = 0;
+    int cmpt = 0;
     int *somme;
     somme = malloc(k*sizeof(int));
 
@@ -158,36 +146,110 @@ int *somme_partition(Sorcier *centres , Sorcier *points)
             if(points[j].cluster == i){
                 sum += manhattan_distance(centres[i], points[j]);
                 somme[i] = sum;
+                cmpt += 1;
             }
         }
-        printf("La somme du cluster n°%d est égale à %d\n", i, somme[i]);
+        printf("La somme du cluster n°%d est égale à %d\n Et le nombre de sommets pour ce cluster est %d\n ", i, somme[i], cmpt);
+        cmpt = 0;
     }
 
     return somme;
 }
 
+/*
+    Fonction final_sum : Retourne la somme totale de tout le partitionnement. 
+*/
+
+int final_sum(int *somme){
+    int final_sum = 0;
+    for(int i=0; i<k; i++)
+    {
+        final_sum += somme[i];
+    }
+            printf("Le coût de ce partitionnement est %d\n", final_sum);
+    return final_sum;
+
+}
+
+/*
+    Fonction echange : échange un point non représentatif avec le point représentatif du cluster auquel il appartient.
+    Retourne le nouveau tableau de points représentatifs. 
+*/
+Sorcier* echange(Sorcier *bary, Sorcier s1){
+   
+    Sorcier *bary_copie;
+    bary_copie = malloc(k*sizeof(Sorcier));
+
+    for(int i=0; i<k; i++){
+        if(s1.cluster == i){
+            bary_copie[i] = s1;
+            printf("Le centre %d dans bary est %s\n", i, bary[i].nom);
+            printf("Le centre %d dans bary_copie est %s\n", i, bary_copie[i].nom);
+        }
+        else{
+            bary_copie[i] = bary[i];
+        }
+        printf("Pour le cluster %d, on remplace le centre %s par le point %s\n", i, bary[i].nom, bary_copie[i].nom);
+
+    }
+    return bary_copie;
+}
+
+/*
+    Fonction partitionnement_final : retourne les points représentatifs les plus optimaux pour avoir
+                         le meilleur partitionnement (clustering) en fonction de la distance.
+*/
+Sorcier *partitionnement_final(Sorcier *bary, Sorcier *liste){
+
+    int *actual = somme_partition(bary,liste);
+    int cout_actuel = final_sum(actual);
+
+    Sorcier *nv_barycentres;
+    nv_barycentres = malloc(k*sizeof(Sorcier));
+
+    for(int i=0; i<k; i++){
+        for(int j=0; j<NB_MAX; j++){
+            if(liste[j].cluster == i){
+                nv_barycentres = echange(bary,liste[j]);
+                clustering(nv_barycentres,liste);
+
+                int *new = somme_partition(nv_barycentres,liste);
+                int cout_nouveau = final_sum(new);
+
+                if(cout_nouveau < cout_actuel){ //Meilleur cas (amélioration)
+                    bary[i] = nv_barycentres[i];
+                    cout_actuel = cout_nouveau;
+                }
+                else { // Pas d'amélioration
+                    continue;
+                } 
+
+            }
+        }
+    }
+
+    return bary;
+} 
 
 
 int main () {
    FILE *fp;
-    int i,n;
-    //int k=5;
+    int i;
     Sorcier *bary;
-    
-    Sorcier s1 = { .nom ="adrien ", .c= 12, .l =13, .s=23, .m=14 };
-    Sorcier s2 = { .nom ="adriene ", .c= 16, .l =10, .s=45, .m=12};
-  
-   fp = fopen("choixpeauMagiqueeee.txt","r");
+    Sorcier *bary2;
 
-    n = cpteLignes(fp);
+    // Ouverture de mon fichier .txt
+   fp = fopen("choixpeauMagiqueeee.txt","r");
    
+   // Condition d'erreur 
    if (fp ==  NULL)
    {
        printf("ERROR ! Can't open the file\n");
        exit(-1);
    }
 
-   for(i=0; i<n; i++){
+    // J'affiche toute ma liste de sorciers, avec tous leurs attributs
+   for(i=0; i<NB_MAX; i++){
        fscanf(fp,"%s %d %d %d %d", 
             liste_sorciers[i].nom,
             &liste_sorciers[i].c,
@@ -203,33 +265,21 @@ int main () {
             liste_sorciers[i].m);
     }
 
-    
-    //printf("%s\n",liste_sorciers[5].nom);
-    //printf("%d\n",liste_sorciers[5].c);
-
-
-   fclose(fp);
-
+    // Je calcule mes indices aléatoirement ...
     int *alea2;
-	alea2 = nombres_alea(5);
+	alea2 = nombres_alea(k);
 	
-	for (int i=0; i<5; i++)
+	for (int i=0; i<k; i++)
 		{
 			printf(" Le tableau d'entiers est \n %d\n", alea2[i]);
 
 		}
-
+    // ... que j'utilise ici pour calculer mes premiers points représentatifs
     bary = points_representatifs(liste_sorciers, alea2);
 
-    int res = manhattan_distance(s1,s2);
-    printf("La distance de manhattan est %d\n", res); 
-
-
-   // int clust = affect_cluster(bary,s1);
-    //printf("s1 appartient au cluster (%d)\n",  clust);
-
+    // Je fais mon clustering initial, et j'affiche tous mes sorciers avec leurs clusters
     clustering(bary, liste_sorciers);
-    for(i=0; i<n; i++){
+    for(i=0; i<NB_MAX; i++){
         printf("%s %d %d %d %d %d \n", 
             liste_sorciers[i].nom,
             liste_sorciers[i].c,
@@ -238,11 +288,35 @@ int main () {
             liste_sorciers[i].m,
             liste_sorciers[i].cluster);
     }
-
     
+    // Je calcule le cout de ce partitionnement et je l'affiche
     int* sum = somme_partition(bary,liste_sorciers);
+    int somme_finale = final_sum(sum);
+    printf("Le coût du partirtionnement initial est égal à %d\n", somme_finale);
+
+    // J'appelle ma fonction partitionnement_final, pour ainsi appliquer le clustering sur chacun de mes points non représentatifs,
+    //  et qu'elle me renvoie le tableau de points représentatifs optimal (le meilleur clustering). 
+    bary2 = partitionnement_final(bary,liste_sorciers);
+    for(i=0; i<k; i++){
+        printf("\nLe centre optimal pour le cluster %d est le sorcier %s\n", i, bary[i].nom);
+    } 
+
+    // Je refais justement ce clustering pour pouvoir l'afficher correctement.
+    clustering(bary2, liste_sorciers);
+    for(i=0; i<NB_MAX; i++){
+        printf("%s %d %d %d %d %d \n", 
+            liste_sorciers[i].nom,
+            liste_sorciers[i].c,
+            liste_sorciers[i].l, 
+            liste_sorciers[i].s, 
+            liste_sorciers[i].m,
+            liste_sorciers[i].cluster);
+    } 
+    // L'algorithme PAM a ainsi été réalisé.
 
 
+    // Je ferme mon fichier et je libère toute la mémoire utilisée au cours de mon éxecution.
+    fclose(fp);
 	free(alea2);
     free(bary);
     free(sum);
