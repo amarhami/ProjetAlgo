@@ -8,7 +8,7 @@
 #include <math.h>
 
 #define NB_MAX 50   // Le nombre de Sorciers dont on dispose 
-#define k 5    // Nombre de clusters de notre projet
+#define k 5   // Nombre de clusters de notre projet
 
 /*
   Structure Sorcier : structure principale de notre projet, qui représente chaque sorcier avec ses 6 champs :
@@ -125,7 +125,7 @@ void clustering(Sorcier *centres , Sorcier *points)
     {
        
         points[i].cluster = affect_cluster(centres, points[i]);
-        printf("Le point %s appartient au cluster n°%d\n ", points[i].nom, points[i].cluster);
+       // printf("Le point %s appartient au cluster n°%d\n ", points[i].nom, points[i].cluster);
    
     }
 }
@@ -149,11 +149,32 @@ int *somme_partition(Sorcier *centres , Sorcier *points)
                 cmpt += 1;
             }
         }
-        printf("La somme du cluster n°%d est égale à %d\n Et le nombre de sommets pour ce cluster est %d\n ", i, somme[i], cmpt);
+       // printf("\n Le nombre de sommets pour le cluster n° %d est %d\n ", i, cmpt);
         cmpt = 0;
     }
 
     return somme;
+}
+
+/*
+    Fonction sommet_du_cluster : calcule le nombre de sommets pour chaque cluster.
+    Retourne un tableau avec les nombres de sommets de nos k clusters.
+*/
+int *sommet_du_cluster(Sorcier *centres , Sorcier *points)
+{
+    int *cmpt;
+    cmpt = malloc(k*sizeof(int));
+
+    for(int i=0; i<k; i++){
+        for(int j=0; j<NB_MAX; j++){
+            if(points[j].cluster == i){
+                cmpt[i] += 1;
+            }
+        }
+        printf("\n Le nombre de sommets pour le cluster n° %d est %d\n ", i, cmpt[i]);
+    }
+
+    return cmpt;
 }
 
 /*
@@ -166,7 +187,7 @@ int final_sum(int *somme){
     {
         final_sum += somme[i];
     }
-            printf("Le coût de ce partitionnement est %d\n", final_sum);
+    printf("Le coût de ce partitionnement est %d\n", final_sum);
     return final_sum;
 
 }
@@ -183,13 +204,13 @@ Sorcier* echange(Sorcier *bary, Sorcier s1){
     for(int i=0; i<k; i++){
         if(s1.cluster == i){
             bary_copie[i] = s1;
-            printf("Le centre %d dans bary est %s\n", i, bary[i].nom);
-            printf("Le centre %d dans bary_copie est %s\n", i, bary_copie[i].nom);
+           // printf("Le centre %d dans bary est %s\n", i, bary[i].nom);
+           // printf("Le centre %d dans bary_copie est %s\n", i, bary_copie[i].nom);
         }
         else{
             bary_copie[i] = bary[i];
         }
-        printf("Pour le cluster %d, on remplace le centre %s par le point %s\n", i, bary[i].nom, bary_copie[i].nom);
+       // printf("Pour le cluster %d, on remplace le centre %s par le point %s\n", i, bary[i].nom, bary_copie[i].nom);
 
     }
     return bary_copie;
@@ -303,15 +324,19 @@ int main () {
 
     // Je refais justement ce clustering pour pouvoir l'afficher correctement.
     clustering(bary2, liste_sorciers);
+    int* sum2 = somme_partition(bary2,liste_sorciers);
+    int somme_finale2 = final_sum(sum2);
+    printf("\n Le coût du partirtionnement optimal est égal à %d\n", somme_finale2);
+
+    printf("\n Après l'application de l'algorithme PAM \n");
+
     for(i=0; i<NB_MAX; i++){
-        printf("%s %d %d %d %d %d \n", 
-            liste_sorciers[i].nom,
-            liste_sorciers[i].c,
-            liste_sorciers[i].l, 
-            liste_sorciers[i].s, 
-            liste_sorciers[i].m,
-            liste_sorciers[i].cluster);
-    } 
+        printf("Le cluster optimal pour le Sorcier %s est %d \n", liste_sorciers[i].nom, liste_sorciers[i].cluster);
+    }
+    // J'affiche le nombre de sommets pour chaque cluster   
+    sommet_du_cluster(bary2,liste_sorciers);
+
+
     // L'algorithme PAM a ainsi été réalisé.
 
 
@@ -321,6 +346,8 @@ int main () {
     free(bary);
     free(sum);
 
+
+    printf("\n\n FIN DE L'ALGORITHME PAM !\n");
    return(0);
 }
 
